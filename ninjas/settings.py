@@ -48,6 +48,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # 'ninjas.middleware.loginRequiredMiddleware', # Dar de alta el middleware
 ]
 
 ROOT_URLCONF = 'ninjas.urls'
@@ -121,7 +122,19 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
 
-LOGIN_REDIRECT_URL = '/index/'
+# Si se trata de ingresar a una vista con login_required
+# Será redireccionado a la página de login
+LOGIN_URL = '/login'
+LOGIN_REDIRECT_URL = '/index'
+
+# Para MIDDLEWARE
+'''
+LOGIN_EXEMPT_URLS = (
+    'login',
+    'register',
+    'logout'
+)
+'''
 
 # Setup Email Response for password
 EMAIL_USE_TLS = True

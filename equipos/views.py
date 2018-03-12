@@ -10,6 +10,7 @@ from django.views.generic import UpdateView
 from .models import Perfil
 from django.contrib.auth.forms import PasswordChangeForm # Formulario para cambiar contraseña
 from django.contrib.auth import update_session_auth_hash # Mantener al usuario en sesion despues de cambiar contraseña
+from django.contrib.auth.decorators import login_required # Decorador para que se necesite loguear para accesar ciertas vistas
 
 # Create your views here.
 def index(request):
@@ -41,6 +42,8 @@ def signup_view(request):
         form = UserCreationForm()
     return render(request, 'equipos/signup.html', {'form':form})
 
+# Checar bien el como guardar los datos del usuario
+# Checar plantilla y view
 def signup_user_view(request):
     if request.method == 'POST':
         form = SignupForm(request.POST)
@@ -50,7 +53,10 @@ def signup_user_view(request):
             user.perfil.birth_date = form.cleaned_data.get('birth_date')
             user.perfil.user_name = form.cleaned_data.get('user_name')
             user.perfil.user_last = form.cleaned_data.get('user_last')
+            user.first_name = user.perfil.user_name
+            user.last_name = user.perfil.user_last
             user.save()
+            # user.perfil.save()
             raw_password = form.cleaned_data.get('password1')
             user = authenticate(username = user.username, password = raw_password)
             login(request, user)
@@ -60,6 +66,7 @@ def signup_user_view(request):
         form = SignupForm()
     return render(request, 'equipos/register.html', {'form': form})
 
+@login_required # Decorador (Investigar sobre middleware para cambiarlo por esto)
 def view_profile(request, pk=None):
     if pk:
         user = User.objects.get(pk=pk)
@@ -68,11 +75,14 @@ def view_profile(request, pk=None):
     args = {'user': user}
     return render(request, 'equipos/profile.html', args)
 
+@login_required
 def edit_profile(request):
     if request.method == 'POST':
         form = EditProfileForm(request.POST, instance = request.user)
         if form.is_valid():
             user = form.save()
+            user.perfil.user_name = user.first_name
+            user.perfil.user_last = user.last_name
             user.perfil.birth_date = form.cleaned_data.get('birth_date')
             user.save()
             return redirect('/profile/')
@@ -81,6 +91,7 @@ def edit_profile(request):
     return render(request, 'equipos/edit_profile.html', {'form': form})
 
 # Vista cambiar contraseña
+@login_required
 def change_password(request):
     if request.method == 'POST':
         form = PasswordChangeForm(data = request.POST, user = request.user)
@@ -99,4 +110,10 @@ def change_password(request):
 def profile(request, username):
     user = User.objects.get(username = username)
     return render(request, 'equipos/perfil.html', {'user':user})
+'''
+'''
+RECORDATORIO
+
+PARA EL PROYECTO QUE SE MOSTRARA AGREGAR CAMPO DE EMAIL Y QUE SEA
+REQUERIDO PARA PODER REGISTRARSE
 '''
